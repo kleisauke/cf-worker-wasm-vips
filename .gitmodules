@@ -1,0 +1,4 @@
+[submodule "wasm-vips"]
+	path = wasm-vips
+	url = https://github.com/kleisauke/wasm-vips
+	branch = cf-worker
