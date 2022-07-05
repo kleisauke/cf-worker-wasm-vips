@@ -22,9 +22,9 @@ export default {
     ): Promise<Response> {
         const vips = await Vips({
             instantiateWasm: (imports, successCallback) => {
-                let instance = new WebAssembly.Instance(module, imports)
-                successCallback(instance)
-                return instance.exports
+                let instance = new WebAssembly.Instance(module, imports);
+                successCallback(instance);
+                return instance.exports;
             },
             locateFile: (path, scriptDirectory) => path,
             mainScriptUrlOrBlob: module,
@@ -34,8 +34,8 @@ export default {
         im.delete();
 
         // Create a new response with the image bytes
-        let response = new Response(buffer)
-        response.headers.set("Content-Type", "image/jpeg")
+        let response = new Response(buffer);
+        response.headers.set("Content-Type", "image/jpeg");
         return response;
     },
 };
