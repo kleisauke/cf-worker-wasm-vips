@@ -27,7 +27,7 @@ export default {
                 return instance.exports;
             },
             locateFile: (path, scriptDirectory) => path,
-            mainScriptUrlOrBlob: module,
+            mainScriptUrlOrBlob: '../wasm-vips/lib/vips.js',
         });
         const im = vips.Image.black(100, 100);
         const buffer = im.jpegsaveBuffer();
