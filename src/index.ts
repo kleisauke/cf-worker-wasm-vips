@@ -1,6 +1,6 @@
 import Vips from '../wasm-vips/lib/vips.js';
 
-// @ts-ignore
+// @ts-expect-error non standard module
 import module from '../wasm-vips/lib/vips.wasm';
 
 export interface Env {
