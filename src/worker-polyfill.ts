@@ -1,4 +1,4 @@
-// WebWorker polyfill based on https://github.com/nolanlawson/pseudo-worker
+// CloudFlare WebWorker polyfill based on https://github.com/nolanlawson/pseudo-worker
 // License:
 //==============================================================================
 // Copyright 2016 Nolan Lawson.
@@ -19,7 +19,7 @@
 // - Remove `addEventListener`, `removeEventListener`; not needed by Emscripten.
 // - Remove `transfer` argument in `postMessage`; not needed by Emscripten when building without OffscreenCanvas support.
 
-export class PseudoWorker {
+export class DurableWorker implements DurableObject {
     onmessage: ((ev: MessageEvent) => any) | undefined;
     onerror: ((ev: ErrorEvent) => any) | undefined;
 
@@ -102,5 +102,21 @@ export class PseudoWorker {
         if (typeof this.onmessage === 'function') {
             callFun(this.onmessage);
         }
+    }
+
+    async fetch(request: Request): Promise<Response> {
+        let url = new URL(request.url);
+        let path = url.pathname.slice(1).split('/');
+
+        switch (path[0]) {
+            case 'postMessage':
+                await this.postMessage(await request.json());
+                return new Response('Done!');
+            default:
+                return new Response('Not found', { status: 404 });
+        }
+    }
+
+    async alarm(): Promise<void> {
     }
 }

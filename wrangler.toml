@@ -4,3 +4,10 @@ compatibility_date = "2022-07-11"
 
 [build]
 command = "npm run build"
+
+[durable_objects]
+bindings = [{ name = "WORKER", class_name = "DurableWorker" }]
+
+[[migrations]]
+tag = "v1"
+new_classes = ["DurableWorker"]
