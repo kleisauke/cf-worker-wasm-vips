@@ -23,11 +23,10 @@ export default {
         const vips = await Vips({
             instantiateWasm: (imports, successCallback) => {
                 let instance = new WebAssembly.Instance(module, imports);
-                successCallback(instance);
+                successCallback(instance, module);
                 return instance.exports;
             },
             locateFile: (path, scriptDirectory) => path,
-            mainScriptUrlOrBlob: '../wasm-vips/lib/vips.js',
         });
         const im = vips.Image.black(100, 100);
         const buffer = im.jpegsaveBuffer();
