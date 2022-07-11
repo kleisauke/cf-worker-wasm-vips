@@ -1,3 +1,4 @@
+import { PseudoWorker } from './worker-polyfill';
 import Vips from '../wasm-vips/lib/vips.js';
 
 // @ts-expect-error non standard module
@@ -20,6 +21,9 @@ export default {
         env: Env,
         ctx: ExecutionContext
     ): Promise<Response> {
+        // @ts-expect-error ignore
+        globalThis.Worker = PseudoWorker;
+
         const vips = await Vips({
             instantiateWasm: (imports, successCallback) => {
                 let instance = new WebAssembly.Instance(module, imports);
