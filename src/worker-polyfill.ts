@@ -16,45 +16,29 @@
 // limitations under the License.
 //==============================================================================
 // Adaptions:
-// - Remove `addEventListener`, `removeEventListener`; not needed by Emscripten.
+// - Remove `addEventListener`, `removeEventListener`, 'postError'; not needed by Emscripten.
 // - Remove `transfer` argument in `postMessage`; not needed by Emscripten when building without OffscreenCanvas support.
 
-export class DurableWorker implements DurableObject {
-    onmessage: ((ev: MessageEvent) => any) | undefined;
-    onerror: ((ev: ErrorEvent) => any) | undefined;
+// @ts-expect-error non standard module
+import module from '../wasm-vips/lib/vips.wasm';
 
+export class DurableWorker implements DurableObject {
     script;
     initialized = false;
     terminated = false;
 
     workerSelf: any = {
-        onmessage: undefined,
-        onerror: undefined // unused by Emscripten
+        onmessage: undefined
     };
 
-    constructor(_path: string) {
-        globalThis.postMessage = (msg) => this.workerPostMessage(msg);
-        globalThis.close = () => this.close();
-        // @ts-expect-error ignore
-        globalThis.performance = {}
-        globalThis.performance.now = () => Date.now();
-        this.script = import('../wasm-vips/lib/vips.worker.js');
-    }
+    webSocket: WebSocket | undefined;
 
-    private postError(err: any): void {
-        const callFun = (listener: (ev: ErrorEvent) => any) => {
-            listener({
-                type: 'error',
-                error: err,
-                message: err.message
-            } as ErrorEvent);
-        };
-        if (typeof this.onerror === 'function') {
-            callFun(this.onerror);
-        }
-        if (typeof this.workerSelf.onerror === 'function') {
-            callFun(this.workerSelf.onerror);
-        }
+    constructor() {
+        // @ts-expect-error ignore
+        globalThis.postMessage = (msg) => this.workerPostMessage(msg);
+        // @ts-expect-error ignore
+        globalThis.close = () => this.terminate();
+        this.script = import('../wasm-vips/lib/vips.worker.js');
     }
 
     private runPostMessage(msg: any): void {
@@ -62,7 +46,7 @@ export class DurableWorker implements DurableObject {
             try {
                 listener({ data: msg } as MessageEvent);
             } catch (err) {
-                this.postError(err);
+                console.error(err);
             }
         }
         if (typeof this.workerSelf.onmessage === 'function') {
@@ -81,42 +65,70 @@ export class DurableWorker implements DurableObject {
             this.workerSelf.onmessage = (await this.script).onmessage;
             this.initialized = true;
         }
+
+        // Emscripten fix
+        if (msg.cmd === 'load') {
+            // FIXME(kleisauke): Need to share the memory with the main thread.
+            // @ts-expect-error ignore
+            msg.wasmMemory = new WebAssembly.Memory({
+                initial: 1024,
+                maximum: 1024,
+                shared: true,
+            });
+            msg.wasmModule = module;
+        }
+        // End of Emscripten fix
+
         this.runPostMessage(msg);
     }
 
-    close(): void {
+    terminate(): void {
         this.terminated = true;
+        this.webSocket?.close();
     }
 
     workerPostMessage(msg: any): void {
         if (this.terminated) {
             return;
         }
-        const callFun = (listener: (ev: MessageEvent) => any) => {
-            try {
-                listener({ data: msg } as MessageEvent);
-            } catch (err) {
-                this.postError(err);
-            }
-        }
-        if (typeof this.onmessage === 'function') {
-            callFun(this.onmessage);
-        }
+        this.webSocket?.send(msg);
     }
 
     async fetch(request: Request): Promise<Response> {
-        let url = new URL(request.url);
-        let path = url.pathname.slice(1).split('/');
+        // To accept the WebSocket request, we create a WebSocketPair (which is like a socketpair,
+        // i.e. two WebSockets that talk to each other), we return one end of the pair in the
+        // response, and we operate on the other end. Note that this API is not part of the
+        // Fetch API standard; unfortunately, the Fetch API / Service Workers specs do not define
+        // any way to act as a WebSocket server today.
+        let pair = new WebSocketPair();
+        const [client, server] = Object.values(pair);
 
-        switch (path[0]) {
-            case 'postMessage':
-                await this.postMessage(await request.json());
-                return new Response('Done!');
-            default:
-                return new Response('Not found', { status: 404 });
-        }
+        // We're going to take pair[1] as our end, and return pair[0] to the client.
+        await this.handleSession(server);
+
+        // Now we return the other end of the pair to the client.
+        return new Response(null, { status: 101, webSocket: client });
     }
 
-    async alarm(): Promise<void> {
+    async handleSession(webSocket: WebSocket) {
+        // Accept our end of the WebSocket.
+        webSocket.accept();
+
+        this.webSocket = webSocket;
+
+        webSocket.addEventListener('message', async msg => {
+            const message = 
+                typeof msg.data === 'string' ? msg.data : new TextDecoder().decode(msg.data);
+            // console.log('incoming message', message);
+
+            await this.postMessage(JSON.parse(message));
+        });
+
+        // On "close" and "error" events, unset the WebSocket.
+        let closeOrErrorHandler = () => {
+            this.webSocket = undefined;
+        };
+        webSocket.addEventListener('close', closeOrErrorHandler);
+        webSocket.addEventListener('error', closeOrErrorHandler);
     }
 }

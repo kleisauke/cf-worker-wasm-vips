@@ -3,9 +3,7 @@
     /* Language and Environment */
     "target": "es2021",
     "lib": [
-      "es2021",
-      "dom",
-      "webworker"
+      "es2021"
     ],
 
     /* Modules */
