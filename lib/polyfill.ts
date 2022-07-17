@@ -21,24 +21,17 @@
 
 // @ts-expect-error non standard module
 import module from '../wasm-vips/lib/vips.wasm';
+import * as workerSelf from '../wasm-vips/lib/vips.worker.js';
 
-export class DurableWorker implements DurableObject {
-    script;
-    initialized = false;
+class Worker {
     terminated = false;
-
-    workerSelf: any = {
-        onmessage: undefined
-    };
-
     webSocket: WebSocket | undefined;
 
     constructor() {
         // @ts-expect-error ignore
-        globalThis.postMessage = (msg) => this.workerPostMessage(msg);
+        globalThis.postMessage = msg => this.workerPostMessage(msg);
         // @ts-expect-error ignore
         globalThis.close = () => this.terminate();
-        this.script = import('../wasm-vips/lib/vips.worker.js');
     }
 
     private runPostMessage(msg: any): void {
@@ -49,26 +42,21 @@ export class DurableWorker implements DurableObject {
                 console.error(err);
             }
         }
-        if (typeof this.workerSelf.onmessage === 'function') {
-            callFun(this.workerSelf.onmessage);
+        if (typeof workerSelf.onmessage === 'function') {
+            callFun(workerSelf.onmessage);
         }
     }
 
-    async postMessage(msg: any): Promise<void> {
+    postMessage(msg: any): void {
         if (typeof msg === 'undefined') {
             throw new Error('postMessage() requires an argument');
         }
         if (this.terminated) {
             return;
         }
-        if (!this.initialized) {
-            this.workerSelf.onmessage = (await this.script).onmessage;
-            this.initialized = true;
-        }
 
         // Emscripten fix
         if (msg.cmd === 'load') {
-            // FIXME(kleisauke): Need to share the memory with the main thread.
             // @ts-expect-error ignore
             msg.wasmMemory = new WebAssembly.Memory({
                 initial: 1024,
@@ -91,10 +79,12 @@ export class DurableWorker implements DurableObject {
         if (this.terminated) {
             return;
         }
+        msg = JSON.stringify(msg);
+        // console.log('server: outgoing message', msg);
         this.webSocket?.send(msg);
     }
 
-    async fetch(request: Request): Promise<Response> {
+    async handleRequest(request: Request): Promise<Response> {
         // To accept the WebSocket request, we create a WebSocketPair (which is like a socketpair,
         // i.e. two WebSockets that talk to each other), we return one end of the pair in the
         // response, and we operate on the other end. Note that this API is not part of the
@@ -116,12 +106,12 @@ export class DurableWorker implements DurableObject {
 
         this.webSocket = webSocket;
 
-        webSocket.addEventListener('message', async msg => {
+        webSocket.addEventListener('message', (e: MessageEvent) => {
             const message = 
-                typeof msg.data === 'string' ? msg.data : new TextDecoder().decode(msg.data);
-            // console.log('incoming message', message);
+                typeof e.data === 'string' ? e.data : new TextDecoder().decode(e.data);
+            // console.log('server: incoming message', message);
 
-            await this.postMessage(JSON.parse(message));
+            this.postMessage(JSON.parse(message));
         });
 
         // On "close" and "error" events, unset the WebSocket.
@@ -132,3 +122,8 @@ export class DurableWorker implements DurableObject {
         webSocket.addEventListener('error', closeOrErrorHandler);
     }
 }
+
+const worker: ExportedHandler = {
+    fetch: (request: Request) => new Worker().handleRequest(request)
+};
+export default worker;

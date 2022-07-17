@@ -6,9 +6,11 @@ compatibility_date = "2022-07-17"
 [build]
 command = "npm run build"
 
-[durable_objects]
-bindings = [{ name = "WORKER", class_name = "DurableWorker" }]
+[[services]]
+binding = "WORKER"
+service = "web-worker-polyfill"
+environment = "production"
 
-[[migrations]]
-tag = "v1"
-new_classes = ["DurableWorker"]
+# https://github.com/cloudflare/wrangler2/issues/273
+[miniflare.mounts]
+web-worker-polyfill = "./lib"

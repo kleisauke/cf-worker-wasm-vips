@@ -17,6 +17,7 @@
   "main": "src/index.ts",
   "scripts": {
     "build": "docker build -t wasm-vips wasm-vips && docker run --rm -v $(pwd)/wasm-vips:/src wasm-vips ./build.sh -e cf",
+    "deploy-lib": "cd lib && wrangler publish",
     "deploy": "wrangler publish",
     "start": "wrangler dev"
   },

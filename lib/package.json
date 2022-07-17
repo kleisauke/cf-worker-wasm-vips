@@ -1,0 +1,22 @@
+{
+  "name": "web-worker-polyfill",
+  "version": "0.0.1",
+  "private": true,
+  "description": "Web Worker polyfill for Cloudflare workers",
+  "homepage": "https://github.com/kleisauke/cf-worker-wasm-vips/tree/main/lib",
+  "bugs": {
+    "url": "https://github.com/kleisauke/cf-worker-wasm-vips/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/kleisauke/cf-worker-wasm-vips.git",
+    "directory": "lib"
+  },
+  "license": "MIT",
+  "author": "Kleis Auke Wolthuizen",
+  "type": "module",
+  "main": "polyfill.ts",
+  "engines": {
+    "node": ">=16.4.0"
+  }
+}
