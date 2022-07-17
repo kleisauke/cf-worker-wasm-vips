@@ -14,15 +14,16 @@
   "license": "MIT",
   "author": "Kleis Auke Wolthuizen",
   "type": "module",
+  "main": "src/index.ts",
   "scripts": {
     "build": "docker build -t wasm-vips wasm-vips && docker run --rm -v $(pwd)/wasm-vips:/src wasm-vips ./build.sh -e cf",
     "deploy": "wrangler publish",
-    "start": "wrangler dev --local"
+    "start": "wrangler dev"
   },
   "devDependencies": {
     "@cloudflare/workers-types": "^3.14.1",
     "typescript": "^4.7.4",
-    "wrangler": "2.0.21"
+    "wrangler": "2.0.22"
   },
   "engines": {
     "node": ">=16.4.0"

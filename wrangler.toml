@@ -1,7 +1,7 @@
-name = "my-worker"
+name = "test"
 main = "src/index.ts"
 send_metrics = false
-compatibility_date = "2022-07-15"
+compatibility_date = "2022-07-17"
 
 [build]
 command = "npm run build"
