@@ -1,4 +1,4 @@
-// CloudFlare WebWorker polyfill based on https://github.com/nolanlawson/pseudo-worker
+// Cloudflare WebWorker polyfill based on https://github.com/nolanlawson/pseudo-worker
 // License:
 //==============================================================================
 // Copyright 2016 Nolan Lawson.
@@ -29,6 +29,10 @@ class Worker {
 
     constructor() {
         // @ts-expect-error ignore
+        globalThis.performance = {}
+        // @ts-expect-error ignore
+        globalThis.performance.now = () => Date.now();
+        // @ts-expect-error ignore
         globalThis.postMessage = msg => this.workerPostMessage(msg);
         // @ts-expect-error ignore
         globalThis.close = () => this.terminate();
@@ -57,6 +61,7 @@ class Worker {
 
         // Emscripten fix
         if (msg.cmd === 'load') {
+            // FIXME(kleisauke): Need to share the memory with the worker that instantiated wasm-vips.
             // @ts-expect-error ignore
             msg.wasmMemory = new WebAssembly.Memory({
                 initial: 1024,
@@ -107,7 +112,7 @@ class Worker {
         this.webSocket = webSocket;
 
         webSocket.addEventListener('message', (e: MessageEvent) => {
-            const message = 
+            const message =
                 typeof e.data === 'string' ? e.data : new TextDecoder().decode(e.data);
             // console.log('server: incoming message', message);
 
