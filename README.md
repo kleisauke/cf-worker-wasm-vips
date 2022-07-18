@@ -17,7 +17,8 @@ on [Cloudflare Workers](https://workers.cloudflare.com/).
 >
 > Since the `WebAssembly.Memory` in [the Web Worker polyfill](
 > lib/polyfill.ts) is not shared with the worker that instantiated
-> wasm-vips.
+> wasm-vips. See this `FIXME`:
+> https://github.com/kleisauke/cf-worker-wasm-vips/blob/5a267a7ca753e38975ddbc2c68431e920c490534/lib/polyfill.ts#L64
 >
 > Cloudflare only allows to pass a string or binary data via
 > [WebSocket connections](
