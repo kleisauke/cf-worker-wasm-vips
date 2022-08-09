@@ -10,7 +10,3 @@ command = "npm run build"
 binding = "WORKER"
 service = "web-worker-polyfill"
 environment = "production"
-
-# https://github.com/cloudflare/wrangler2/issues/273
-[miniflare.mounts]
-web-worker-polyfill = "./lib"

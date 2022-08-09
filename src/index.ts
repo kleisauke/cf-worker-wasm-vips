@@ -67,10 +67,10 @@ export async function handleRequest(
                     }, {
                         apply: async (sendFunc, _thisArg, args: any[]) => {
                             if (!webSocket) {
-                                const res = await fetchTarget.fetch('https://fake-host/', {
+                                const res = await fetchTarget.fetch(new Request('https://fake-host/', {
                                     cf: request.cf, // https://github.com/remix-run/remix/issues/3640
                                     headers: { Upgrade: 'websocket' },
-                                });
+                                }));
 
                                 webSocket = res.webSocket!!;
                                 webSocket.accept();
