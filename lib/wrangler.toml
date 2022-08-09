@@ -1,4 +1,4 @@
 name = "web-worker-polyfill"
 main = "polyfill.ts"
 send_metrics = false
-compatibility_date = "2022-07-17"
+compatibility_date = "2022-08-09"

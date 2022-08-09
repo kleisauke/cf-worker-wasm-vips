@@ -1,7 +1,7 @@
 name = "test"
 main = "src/index.ts"
 send_metrics = false
-compatibility_date = "2022-07-17"
+compatibility_date = "2022-08-09"
 
 [build]
 command = "npm run build"
