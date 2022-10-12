@@ -29,7 +29,7 @@ export async function handleRequest(
             let customProps: any = {};
 
             return new Proxy(WORKER, {
-                set: (fetchTarget: Fetcher, prop: string | symbol, value, _receiver) => {
+                set: (_fetchTarget: Fetcher, prop: string | symbol, value, _receiver) => {
                     switch (prop) {
                         case 'onmessage':
                             onmessage = (e: MessageEvent) => {
