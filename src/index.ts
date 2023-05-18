@@ -15,11 +15,6 @@ export async function handleRequest(
     const { WORKER } = env;
 
     // @ts-expect-error ignore
-    globalThis.performance = {}
-    // @ts-expect-error ignore
-    globalThis.performance.now = () => Date.now();
-
-    // @ts-expect-error ignore
     globalThis.Worker = new Proxy(class { }, {
         construct(_target, _args) {
             let webSocket: WebSocket;
@@ -88,7 +83,6 @@ export async function handleRequest(
 
     const vips = await Vips({
         instantiateWasm: (imports, successCallback) => {
-            // @ts-expect-error ignore
             let instance = new WebAssembly.Instance(module, imports);
             successCallback(instance, module);
             return instance.exports;

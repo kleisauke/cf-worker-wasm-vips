@@ -2,21 +2,17 @@
   "compilerOptions": {
     /* Language and Environment */
     "target": "es2021",
-    "lib": [
-      "es2021"
-    ],
+    "lib": ["es2021"],
 
     /* Modules */
     "module": "es2022",
     "moduleResolution": "node",
-    "types": [
-      "@cloudflare/workers-types"
-    ],
+    "types": ["@cloudflare/workers-types"],
     "resolveJsonModule": true,
- 
+
     /* JavaScript Support */
     "allowJs": true,
-    "checkJs": true,
+    "checkJs": false,
 
     /* Emit */
     "noEmit": true,
@@ -28,6 +24,8 @@
 
     /* Type Checking */
     "strict": true,
+
+    /* Completeness */
     "skipLibCheck": true
   }
 }
