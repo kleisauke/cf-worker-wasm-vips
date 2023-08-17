@@ -3,7 +3,8 @@
 An experiment with running [wasm-vips](https://github.com/kleisauke/wasm-vips)
 on [Cloudflare Workers](https://workers.cloudflare.com/).
 
-> **Warning**: wasm-vips in its current form can never run on Cloudflare workers.  
+> [!WARNING]
+> wasm-vips in its current form can never run on Cloudflare workers.  
 > See https://github.com/kleisauke/wasm-vips/issues/2#issuecomment-1187416552
 > for details.
 
@@ -28,7 +29,7 @@ https://github.com/kleisauke/cf-worker-wasm-vips/blob/9f0c4c837a7ca85b54ddeb26d9
 
 Cloudflare only allows to pass a string or binary data via
 [WebSocket connections](
-https://github.com/cloudflare/workerd/blob/88863c169cecbd042e908c4af91669ff35b9529d/src/workerd/api/web-socket.h#L55),
+https://github.com/cloudflare/workerd/blob/cae438f99d3e070e5530dbf42f338ee3392e68ae/src/workerd/api/web-socket.h#L62),
 which won't work for [Emscripten's pthread](
 https://emscripten.org/docs/porting/pthreads.html) integration.
 It requires an API that allows sharing Wasm memory between workers.
